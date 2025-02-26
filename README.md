@@ -11,3 +11,6 @@ Valid transition:
 
 One players fingers increases by the other players fingers on one hand
 
+
+
+

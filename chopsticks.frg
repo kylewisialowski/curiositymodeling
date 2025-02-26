@@ -10,8 +10,8 @@ sig Hand {
 }
 
 sig Player {
-    hand1 : lone Hand,
-    hand2 : lone Hand,
+    hand1 : one Hand,
+    hand2 : one Hand,
     next: lone Player
 }
 
@@ -46,6 +46,20 @@ pred reachablePlayers {
         all p: Player | reachable[first, p, next]
 }
 
+pred alwaysTwoHands {
+    all p: Player | {
+
+    }
+}
+
+pred disjointPlayers {
+    all disj p1, p2: Player | {
+        reachable[p1, p2, next] implies not reachable[p2, p1, next]
+        not reachable[p1, p1, next]
+        not reachable[p2, p2, next]
+    }
+}
+
 
 // pred p1turn[o: Order] {
 //     o.current = p1
@@ -67,6 +81,8 @@ pred winning {
         p1.next = p2
         add[p1.hand1.fingers, p1.hand2.fingers] >= 7
         add[p2.hand1.fingers, p2.hand2.fingers] < 7
+
+        
     }
 }
 
@@ -88,7 +104,9 @@ run {
         init // and
         // move[p1, p2] and
         // move[p2, p3]
-    disjointHands
+    // disjointHands
     reachablePlayers
-    // reachableHands
+    alwaysTwoHands
+    disjointPlayers
+    reachableHands
 } for exactly 3 Player, exactly 6 Hand
