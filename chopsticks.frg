@@ -12,7 +12,7 @@ sig Hand {
 sig Player {
     hand1 : one Hand,
     hand2 : one Hand,
-    next: lone Player
+    next: one Player
 }
 
 fun countFingers[p1: Player, p2: Player]: one Int {
@@ -92,30 +92,29 @@ pred noNegativeFingers {
 }
 
 pred move[p1: Player, p2: Player, p3: Player] {
-    p1.next = p2
+    // p1.next = p2 -- we already do this in init
     p2.next = p3
     add[p3.hand1.fingers, p3.hand2.fingers] = add[p1.hand1.fingers, p1.hand2.fingers, p2.hand1.fingers] or 
     add[p3.hand1.fingers, p3.hand2.fingers] = add[p1.hand1.fingers, p1.hand2.fingers, p2.hand2.fingers]
-    #{p3.hand1.fingers} >= #{p1.hand1.fingers}
-    #{p3.hand2.fingers} >= #{p1.hand2.fingers}
+    p3.hand1.fingers >= p1.hand1.fingers
+    p3.hand2.fingers >= p1.hand2.fingers
     // (countFingers[p1, p1.next] = add[countFingers[p1, p2], p1.hand1.fingers] or
     // countFingers[p1, p1.next] = add[countFingers[p1, p2], p1.hand2.fingers])
 }
 
 run {
-    some p1, p2, p3, p4, p5, p6, p7: Player | {
+    some p1, p2, p3, p4, p5, p6: Player | {
         init[p1, p2] // and
         noNegativeFingers
         move[p1, p2, p3]
         move[p2, p3, p4]
         move[p3, p4, p5]
         move[p4, p5, p6]
-        move[p5, p6, p7]
-        winning[p1, p7, p6]
+        winning[p1, p6, p5]
         disjointHands
         reachablePlayers
         alwaysTwoHands
         // disjointPlayers
         reachableHands
     }
-} for exactly 7 Player, exactly 14 Hand
+} for exactly 6 Player, exactly 12 Hand
