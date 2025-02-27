@@ -6,7 +6,7 @@
 // }
 
 sig Hand {
-    fingers : lone Int
+    fingers : one Int
 }
 
 sig Player {
@@ -15,9 +15,9 @@ sig Player {
     next: one Player
 }
 
-fun countFingers[p1: Player, p2: Player]: one Int {
-    add[p1.hand1.fingers, p1.hand2.fingers, p2.hand1.fingers, p2.hand2.fingers]
-}
+// fun countFingers[p1: Player, p2: Player]: one Int {
+//     add[p1.hand1.fingers, p1.hand2.fingers, p2.hand1.fingers, p2.hand2.fingers]
+// }
 
 pred disjointHands {
     all h: Hand | {
@@ -47,7 +47,7 @@ pred reachablePlayers {
 
 pred alwaysTwoHands {
     all p: Player | {
-
+        some p.hand1 and some p.hand2
     }
 }
 
@@ -88,8 +88,18 @@ pred winning[p1: Player] {
     }
 }
 
+// pred winning[winner: Player, loser: Player] {
+//     add[loser.hand1.fingers, loser.hand2.fingers] >= 7
+//     add[winner.hand1.fingers, winner.hand2.fingers] < 7
+//     winner.next = loser
+//     loser.next = winner
+// }
+
 pred init[p1: Player, p2: Player] {
+    // temp = p1
     p1.next = p2
+    // p2.next = temp
+
     p1.hand1.fingers = 1
     p1.hand2.fingers = 1
     p2.hand1.fingers = 1
@@ -106,17 +116,29 @@ pred move[p1: Player, p2: Player, p3: Player] {
     
     add[p3.hand1.fingers, p3.hand2.fingers] = add[p1.hand1.fingers, p1.hand2.fingers, p2.hand1.fingers] or 
     add[p3.hand1.fingers, p3.hand2.fingers] = add[p1.hand1.fingers, p1.hand2.fingers, p2.hand2.fingers]
+
+    -- Hands cannot lose fingers (ensures only valid moves)
     p3.hand1.fingers >= p1.hand1.fingers
     p3.hand2.fingers >= p1.hand2.fingers
-
-    // Tried to make it more generalizable here so that the three positions can keep rotating 
-    // p3 = p1
-    // p1 = p2
-    // p2 = p3
 
     // (countFingers[p1, p1.next] = add[countFingers[p1, p2], p1.hand1.fingers] or
     // countFingers[p1, p1.next] = add[countFingers[p1, p2], p1.hand2.fingers])
 }
+
+
+// run {
+//     some p1, p2, temp: Player | {
+//         init[p1, p2, temp] // and
+//         noNegativeFingers
+//         move[p1, p2, p1]
+//         // move[p2, p1, p2]
+//         // winning[p1, p2] or winning[p2, p1]
+//         // disjointHands
+//         // reachablePlayers
+//         // alwaysTwoHands
+//         // reachableHands
+//     }
+// } for exactly 2 Player, exactly 2 Hand
 
 run {
     some p1, p2, p3, p4, p5, p6: Player | {
