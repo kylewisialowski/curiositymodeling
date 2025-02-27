@@ -42,8 +42,7 @@ pred reachableHands {
 }
 
 pred reachablePlayers {
-    some first: Player | 
-        all p: Player | reachable[first, p, next]
+    all p1, p2: Player | reachable[p1, p2, next]
 }
 
 pred alwaysTwoHands {
@@ -52,13 +51,11 @@ pred alwaysTwoHands {
     }
 }
 
-pred disjointPlayers {
-    all disj p1, p2: Player | {
-        reachable[p1, p2, next] implies not reachable[p2, p1, next]
-        not reachable[p1, p1, next]
-        not reachable[p2, p2, next]
-    }
-}
+// pred disjointPlayers {
+//     all disj p1, p2: Player | {
+//         reachable[p1, p2, next] implies not reachable[p2, p1, next]
+//     }
+// }
 
 
 // pred p1turn[o: Order] {
@@ -75,38 +72,50 @@ pred disjointPlayers {
 //     p1turn[o] or p2turn[o]
 // }
 
-pred winning {
-    some p1, p2: Player | {
-        p2.next = none
-        p1.next = p2
-        add[p1.hand1.fingers, p1.hand2.fingers] >= 7
-        add[p2.hand1.fingers, p2.hand2.fingers] < 7
-
-        
-    }
+pred winning[p1: Player, losingPlayer: Player, winningPlayer: Player] {
+    add[losingPlayer.hand1.fingers, losingPlayer.hand2.fingers] >= 7
+    add[winningPlayer.hand1.fingers, winningPlayer.hand2.fingers] < 7
+    winningPlayer.next = losingPlayer
+    losingPlayer.next = p1
 }
 
-pred init{
-    some p: Player| {
-	p.hand1.fingers = 1
-    p.hand2.fingers = 1
-    }
-}
-
-pred move[p1: Player, p2: Player] {
+pred init[p1: Player, p2: Player] {
     p1.next = p2
-    (countFingers[p1, p1.next] = add[countFingers[p1, p2], p1.hand1.fingers] or
-    countFingers[p1, p1.next] = add[countFingers[p1, p2], p1.hand2.fingers])
+    p1.hand1.fingers = 1
+    p1.hand2.fingers = 1
+    p2.hand1.fingers = 1
+    p2.hand2.fingers = 1
+}
+
+pred noNegativeFingers {
+    all h: Hand | h.fingers >= 1
+}
+
+pred move[p1: Player, p2: Player, p3: Player] {
+    p1.next = p2
+    p2.next = p3
+    add[p3.hand1.fingers, p3.hand2.fingers] = add[p1.hand1.fingers, p1.hand2.fingers, p2.hand1.fingers] or 
+    add[p3.hand1.fingers, p3.hand2.fingers] = add[p1.hand1.fingers, p1.hand2.fingers, p2.hand2.fingers]
+    #{p3.hand1.fingers} >= #{p1.hand1.fingers}
+    #{p3.hand2.fingers} >= #{p1.hand2.fingers}
+    // (countFingers[p1, p1.next] = add[countFingers[p1, p2], p1.hand1.fingers] or
+    // countFingers[p1, p1.next] = add[countFingers[p1, p2], p1.hand2.fingers])
 }
 
 run {
-    some p1, p2, p3: Player |
-        init // and
-        // move[p1, p2] and
-        // move[p2, p3]
-    // disjointHands
-    reachablePlayers
-    alwaysTwoHands
-    disjointPlayers
-    reachableHands
-} for exactly 3 Player, exactly 6 Hand
+    some p1, p2, p3, p4, p5, p6, p7: Player | {
+        init[p1, p2] // and
+        noNegativeFingers
+        move[p1, p2, p3]
+        move[p2, p3, p4]
+        move[p3, p4, p5]
+        move[p4, p5, p6]
+        move[p5, p6, p7]
+        winning[p1, p7, p6]
+        disjointHands
+        reachablePlayers
+        alwaysTwoHands
+        // disjointPlayers
+        reachableHands
+    }
+} for exactly 7 Player, exactly 14 Hand
