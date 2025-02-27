@@ -72,28 +72,14 @@ pred alwaysTwoHands {
 //     p1turn[o] or p2turn[o]
 // }
 
-// pred winning[p1: Player, losingPlayer: Player, winningPlayer: Player] {
-//     add[losingPlayer.hand1.fingers, losingPlayer.hand2.fingers] >= 7
-//     add[winningPlayer.hand1.fingers, winningPlayer.hand2.fingers] < 7
-//     winningPlayer.next = losingPlayer
-//     losingPlayer.next = p1
-// }
-
 pred winning[p1: Player] {
     some p1, losingPlayer, winningPlayer: Player | {
-        add[losingPlayer.hand1.fingers, losingPlayer.hand2.fingers] >= 7
-        add[winningPlayer.hand1.fingers, winningPlayer.hand2.fingers] < 7
+        add[losingPlayer.hand1.fingers, losingPlayer.hand2.fingers] > 10
+        add[winningPlayer.hand1.fingers, winningPlayer.hand2.fingers] <= 10
         winningPlayer.next = losingPlayer
         losingPlayer.next = p1 
     }
 }
-
-// pred winning[winner: Player, loser: Player] {
-//     add[loser.hand1.fingers, loser.hand2.fingers] >= 7
-//     add[winner.hand1.fingers, winner.hand2.fingers] < 7
-//     winner.next = loser
-//     loser.next = winner
-// }
 
 pred init[p1: Player, p2: Player] {
     // temp = p1
@@ -155,4 +141,4 @@ run {
         // disjointPlayers
         reachableHands
     }
-} for exactly 6 Player, exactly 12 Hand // will be unsat with less than this, is sat for anything greater
+} for exactly 9 Player, exactly 18 Hand // will be unsat with less than this, is sat for anything greater
