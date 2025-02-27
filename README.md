@@ -21,29 +21,39 @@ Our project models a modified verision of the Chopsticks game. In this game, the
 
 Give an overview of your model design choices, what checks or run statements you wrote, and what we should expect to see from an instance produced by the Sterling visualizer. How should we look at and interpret an instance created by your spec? Did you create a custom visualization, or did you use the default?
 
+In our model, the Player sig functions more like a "turn", where all of one player's turns are represented by positive numbers and the other player's turns are represented by negative numbers. Each Player has two hands, hand1 and hand 2. Each Player also has a next field to switch turns between each other. 
+
+The Hand sig has a field to represent the fingers on each hand. 
+
 **Signatures and Predicates:**
 
-At a high level, what do each of your sigs and preds represent in the context of the model? Justify the purpose for their existence and how they fit together.
-
 disjointHands
+- This predicate checks that each player's hand is separate from it's other hand and from both of the opposing player's hands. 
 
 reachableHands
+- This predicate chekcs that all hands in the model are pointed to by some player and that there are never lone hands in the game.
 
 reachablePlayers
+- This predicate checks that all players are connected to each other using the "next" attribute. The last player loops back to the first player, so the first player is reachable as well. This ensures that the players are going in sequential order and that they are switching turns. 
 
 alwaysTwoHands
+- This predicate checks that all players have exactly two hands. A player can not have more or less than two hands at all times. 
 
-winning
+winning[p1]
+- This predicate checks that it is possible for a player to win the game. A player wins the game when they have a total of less than 7 fingers across both of their hands and the opposing player has a total of 7 or more fingers across both of their hands. This also checks that the losing player loops back to the first player. This is an indication that the game has ended and that the game needs to start over. This predicate relies on the move predicate to correctly increase the number of total fingers on each player's hands during their turn.
 
-init
+init[p1, p2]
+- This predicate sets up the game where each player has one finger on each of their hands. It also creates a link between the two players where Player 1 points to Player 2 through the next attribute. This forms the basis of the game, and the move predicate can be used to continue further actions.
 
 noNegativeFingers
+- This predicate checks that each hand has a positive number of fingers. Becuase integers in Forge span from -8 to 7. We don't want to include negative numbers because that would interfere with the addition that we need to do during each move to count up total fingers. 
 
-move
+move[p1, p2, p3]
+- This predicate checks that a valid move is being played. A valid move is when the current player's total number fingers is being increased by the number of fingers on one of the opposing player's hands. The current player is represented by p1 and p3 (as referenced in our interpretation of the Player sig being more simliar to a "turn" and odd Players / turns refer to one player). Hands cannot lose fingers (this is checking that noNegativeFigners is working as well).
 
 **Testing:**
 
-What tests did you write to test your model itself? What tests did you write to verify properties about your domain area? Feel free to give a high-level overview of this.
+We wrote unit tests for each of the predicates as well as system tests to check that everything runs with all of the predicates and specific arguments. For each predicate, we wrote mutiple tests for scenarios that should pass and fail according to the predicate's properties. For the system tests, we checked three scenarios: the most ideal and efficient, as defined by the number of moves / turns, way to win (6 Players), another possible way to win but not the most efficient (8 Players), and the case where it is impossible to win with such minimal number of moves (4 Players).
 
 **Documentation:**
 

@@ -10,8 +10,8 @@ sig Hand {
 }
 
 sig Player {
-    hand1 : one Hand,
-    hand2 : one Hand,
+    hand1 : lone Hand,
+    hand2 : lone Hand,
     next: one Player
 }
 
@@ -28,7 +28,7 @@ pred disjointHands {
             reachable[h, p1, hand2] implies not reachable[h, p2, hand2]
 
             reachable[h, p1, hand1] implies not reachable[h, p1, hand2]
-            reachable[h, p1, hand2] implies not reachable[h, p2, hand1]
+            reachable[h, p2, hand1] implies not reachable[h, p2, hand2]
         }
     }
 }
@@ -47,7 +47,7 @@ pred reachablePlayers {
 
 pred alwaysTwoHands {
     all p: Player | {
-        some p.hand1 and some p.hand2
+        one p.hand1 and one p.hand2
     }
 }
 
