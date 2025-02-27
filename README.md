@@ -1,31 +1,24 @@
-# curiositymodeling
-Curiosity Modeling Project for CSCI 1710
-
-
-2 players, each payer has 2 hands, each hand has up to five fingers
-
-Init:
-each player's hand1 + hand2 has 1 finger
-
-Valid transition:
-
-One players fingers increases by the other players fingers on one hand
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-
 **Project Objective:**
 
 Our project models a modified verision of the Chopsticks game. In this game, there are two players. Each player has two hands and starts with one finger on each hand. Then Player 1 can use on of their hands to point to one of Player 2's hand and transfer over the number of fingers on Player 1's hand to Player 2's hand. They switch turns doing this until one player has 7 or more fingers across both of their hands. When this happens, the player with 7 or more fingers loses the game. The other player wins.
 
 **Model Design and Visualization:**
 
-Give an overview of your model design choices, what checks or run statements you wrote, and what we should expect to see from an instance produced by the Sterling visualizer. How should we look at and interpret an instance created by your spec? Did you create a custom visualization, or did you use the default?
+Design Choices:
 
-In our model, the Player sig functions more like a "turn", where all of one player's turns are represented by positive numbers and the other player's turns are represented by negative numbers. Each Player has two hands, hand1 and hand 2. Each Player also has a next field to switch turns between each other. 
+Inititally, we tried to model this game with a singular Player1 and Player 2. Especially with the visualizer, this was challenging to implement in a fashion that would produce a clear result. Instead, we designed the game such that there are more than 2 player instances that represent both a "player" and a game state. One way to think about this would be that odd players represent Player 1 and even players represent Player 2. In this sense, we can see the player instances as "Players." Each player also has a next field that points to another player. In this sense, we can see the player instances as game states.
 
-The Hand sig has a field to represent the fingers on each hand. 
+Modifications to the original game: We initially tried to model the exact game of Chopsticks but ran into trouble when trying to make specifications about each hand as well as the rules of "splitting" (when a player can use their move to redistribute their fingers between two hands). For this reason, we decided to omit the split rule. Given the flexibility of our predicates, our model produces instances where a player redistributes the fingers on their hands, but this redistribution does not count as a turn of its own. Also, the max fingers is 7 as to avoid the bitwidth concerns (which we did attempt to work around, but were having syntax issues). If we could pursue this project in more depth for the final, we would be interested in accounting for a more comprehensive model that tracks the maximum fingers (5) on individual hands (after which a player loses a hand), interpreting a "split" as a turn, and implementing a custom visualizaiton.
+
+Running/interpretting our project: The run statement at the bottom of chopsticks.frg runs the program with 6 "players" (better interpreted as 6 moves). When looking at the visualizer, try to find the two players whose hands all point to "1." These are the starting players. Once you find these players, you can move through the visualizer via the "next" fields to see subsequent states of the game. Eventually, you will reach a player who has more than 7 total fingers. This is when the game "ends" because that player has lost. The end of the game is marked by a loop back to the first player.
 
 **Signatures and Predicates:**
+
+Hand sig
+- This signature represents a hand and contains a "fingers" field. This field points to an integer that represents the number of fingers on the hand.
+
+Player sig
+- This signature represents a player and contains a field for hand1 and hand2 (which each point to a hand object), as well as a next field that points to the next player in the game.
 
 disjointHands
 - This predicate checks that each player's hand is separate from it's other hand and from both of the opposing player's hands. 
@@ -53,11 +46,6 @@ move[p1, p2, p3]
 
 **Testing:**
 
-We wrote unit tests for each of the predicates as well as system tests to check that everything runs with all of the predicates and specific arguments. For each predicate, we wrote mutiple tests for scenarios that should pass and fail according to the predicate's properties. For the system tests, we checked three scenarios: the most ideal and efficient, as defined by the number of moves / turns, way to win (6 Players), another possible way to win but not the most efficient (8 Players), and the case where it is impossible to win with such minimal number of moves (4 Players).
+We wrote unit tests for each of the predicates as well as system tests to check that everything runs with all of the predicates and specific arguments. For each predicate, we wrote mutiple tests for scenarios that should pass and fail according to the predicate's properties. For the system tests, we checked three scenarios: the most ideal and efficient, as defined by the number of moves / turns, way to win (6 Players), another possible way to win but not the most efficient (8 Players), and the case where it is impossible to win with such minimal number of moves (4 Players). Feel free to check our documentation for more details.
 
-**Documentation:**
-
-Make sure your model and test files are well-documented. This will help in understanding the structure and logic of your project.
-
-
-
+**Contributors: kwisialo, kmao5**
