@@ -110,35 +110,57 @@ test suite for alwaysTwoHands {
 }
 
 test suite for winning {
-    example validWinner is {all p: player | winning[p]} for {
+    example validWinner is {some p1: Player | winning[p1]} for {
+        Player = `p1 + `loser + `winner
+        Hand = `loserH1 + `loserH2 + `winnerH1 + `winnerH2
+        next = `winner -> `loser + `loser -> `p1 + `p1 -> `winner
 
+        hand1 = `loser -> `loserH1 + `winner -> `winnerH1
+        hand2 = `loser -> `loserH2 + `winner -> `winnerH2
+
+        `loserH1.fingers = 3
+        `loserH2.fingers = 4
+        `winnerH1.fingers = 1
+        `winnerH2.fingers = 2
     }
 
-    example noWinner is {all p: player | winning[p]} for {
+    example noWinner is {no p1: Player | winning[p1]} for {
+        Player = `p1 + `p2 + `p3
+        Hand = `p2h1 + `p2h2 + `p3h1 + `p3h2
 
+        hand1 = `p2 -> `p2h1 + `p3 -> `p3h1
+        hand2 = `p2 -> `p2h2 + `p3 -> `p3h2
+
+        `p2h1.fingers = 2
+        `p2h2.fingers = 4
+        `p3h1.fingers = 1
+        `p3h2.fingers = 2
     }
 
 }
 
 test suite for init {
+    example validInit is {all disj p1, p2 : Player | init[p1, p2]} for {
+        Player = `p1 + `p2
+        Hand = `p1h1 + `p1h2 + `p2h1 + `p2h2 
 
-    // The instance specified is impossible. 
-    // This means that the specified bounds conflict with each other or with the sig/field definitions.
-    // example validInit is {all p1, p2 : Player | init[p1, p2]} for {
-    //     Player = `p1 + `p2
-    //     Hand = `p1h1 + `p1h2 + `p2h1 + `p2h2 
+        hand1 = `p1 -> `p1h1 + `p2 -> `p2h1 
+        hand2 = `p1 -> `p1h2 + `p2 -> `p2h2 
+        next = `p1 -> `p2 + `p2 -> `p1
 
-    //     hand1 = `p1 -> `p1h1 + `p2 -> `p2h1 
-    //     hand2 = `p1 -> `p1h2 + `p2 -> `p2h2 
-    //     next = `p1 -> `p2
+        fingers = `p1h1 -> 1 + `p1h2 -> 1 + `p2h1 -> 1 + `p2h2 -> 1
+    }
 
-    //     fingers = `p1h1 -> 1 + `p1h2 -> 1 + `p2h1 -> 1 + `p2h2 -> 1
-    // }
+    example initNotOne is {no p1, p2 : Player | init[p1, p2]} for {
+        Player = `p1 + `p2
+        Hand = `p1h1 + `p1h2 + `p2h1 + `p2h2 
 
-    // `p1h1.fingers = 1
-    // `p1h2.fingers = 1
-    // `p2h1.fingers = 1
-    // `p2h2.fingers = 1
+        hand1 = `p1 -> `p1h1 + `p2 -> `p2h1 
+        hand2 = `p1 -> `p1h2 + `p2 -> `p2h2 
+        next = `p1 -> `p2 + `p2 -> `p1
+
+        fingers = `p1h1 -> 1 + `p1h2 -> 3 + `p2h1 -> 1 + `p2h2 -> 2
+    }
 
 }
 
@@ -160,23 +182,73 @@ test suite for noNegativeFingers {
     }
 }
 
-// test suite for move {
-//     example validMove is {some p1, p2, p3 : Player | move[p1, p2, p3]} for {
-//         Player = `p1 + `p2 + `p3
-//         Hand = `p1h1 + `p1h2 + `p2h1 + `p2h2 + `p3h1 + `p3h2
+test suite for move {
+    example validMove is {some p1, p2, p3 : Player | move[p1, p2, p3]} for {
+        Player = `p1 + `p2 + `p3
+        Hand = `p1h1 + `p1h2 + `p2h1 + `p2h2 + `p3h1 + `p3h2
 
-//         hand1 = `p1 -> `p1h1 + `p2 -> `p2h1 + `p3 -> `p3h1
-//         hand2 = `p1 -> `p1h2 + `p2 -> `p2h2 + `p3 -> `p3h2
-//         next = `p2 -> `p3
+        hand1 = `p1 -> `p1h1 + `p2 -> `p2h1 + `p3 -> `p3h1
+        hand2 = `p1 -> `p1h2 + `p2 -> `p2h2 + `p3 -> `p3h2
+        next = `p1 -> `p2 + `p2 -> `p3 + `p3 -> `p1
 
-//         `p1h1.fingers = 1
-//         `p1h2.fingers = 1
-//         `p2h1.fingers = 2 // add here
-//         `p2h2.fingers = 1
-//         `p3h1.fingers = 3
-//         `p3h2.fingers = 1
-//     }
-// }
+        `p1h1.fingers = 1
+        `p1h2.fingers = 1
+        `p2h1.fingers = 2 // add from p2h1
+        `p2h2.fingers = 1
+        `p3h1.fingers = 3
+        `p3h2.fingers = 1
+    }
+
+    example validMove2 is {some p1, p2, p3 : Player | move[p1, p2, p3]} for {
+        Player = `p1 + `p2 + `p3
+        Hand = `p1h1 + `p1h2 + `p2h1 + `p2h2 + `p3h1 + `p3h2
+
+        hand1 = `p1 -> `p1h1 + `p2 -> `p2h1 + `p3 -> `p3h1
+        hand2 = `p1 -> `p1h2 + `p2 -> `p2h2 + `p3 -> `p3h2
+        next = `p1 -> `p2 + `p2 -> `p3 + `p3 -> `p1
+
+        `p1h1.fingers = 1
+        `p1h2.fingers = 1
+        `p2h1.fingers = 1 
+        `p2h2.fingers = 2 // add from p2h2
+        `p3h1.fingers = 3
+        `p3h2.fingers = 1
+    }
+
+    // invalid move
+    example addWrongNumber is {no p1, p2, p3 : Player | move[p1, p2, p3]} for {
+        Player = `p1 + `p2 + `p3
+        Hand = `p1h1 + `p1h2 + `p2h1 + `p2h2 + `p3h1 + `p3h2
+
+        hand1 = `p1 -> `p1h1 + `p2 -> `p2h1 + `p3 -> `p3h1
+        hand2 = `p1 -> `p1h2 + `p2 -> `p2h2 + `p3 -> `p3h2
+        next = `p1 -> `p2 + `p2 -> `p3 + `p3 -> `p1
+
+        `p1h1.fingers = 1
+        `p1h2.fingers = 1
+        `p2h1.fingers = 1
+        `p2h2.fingers = 1
+        `p3h1.fingers = 3 // this value is too high, can't get there directly from (1,1) and (1,1)
+        `p3h2.fingers = 3 // this value is too high, can't get there directly from (1,1) and (1,1)
+    }
+
+    // invalid move
+    example subtractFingers is {no p1, p2, p3 : Player | move[p1, p2, p3]} for {
+        Player = `p1 + `p2 + `p3
+        Hand = `p1h1 + `p1h2 + `p2h1 + `p2h2 + `p3h1 + `p3h2
+
+        hand1 = `p1 -> `p1h1 + `p2 -> `p2h1 + `p3 -> `p3h1
+        hand2 = `p1 -> `p1h2 + `p2 -> `p2h2 + `p3 -> `p3h2
+        next = `p1 -> `p2 + `p2 -> `p3 + `p3 -> `p1
+
+        `p1h1.fingers = 2
+        `p1h2.fingers = 3
+        `p2h1.fingers = 2 
+        `p2h2.fingers = 1
+        `p3h1.fingers = 1 // too small, needs to be at least 2 (stay same) or 3 (add 1)
+        `p3h2.fingers = 1 // too small, needs to be at least 2 (stay same) or 3 (add 1)
+    }
+}
 
 test expect {
     mostEfficientWin: {
