@@ -103,10 +103,17 @@ pred noNegativeFingers {
 pred move[p1: Player, p2: Player, p3: Player] {
     // p1.next = p2 -- we already do this in init
     p2.next = p3
+    
     add[p3.hand1.fingers, p3.hand2.fingers] = add[p1.hand1.fingers, p1.hand2.fingers, p2.hand1.fingers] or 
     add[p3.hand1.fingers, p3.hand2.fingers] = add[p1.hand1.fingers, p1.hand2.fingers, p2.hand2.fingers]
     p3.hand1.fingers >= p1.hand1.fingers
     p3.hand2.fingers >= p1.hand2.fingers
+
+    // Tried to make it more generalizable here so that the three positions can keep rotating 
+    // p3 = p1
+    // p1 = p2
+    // p2 = p3
+
     // (countFingers[p1, p1.next] = add[countFingers[p1, p2], p1.hand1.fingers] or
     // countFingers[p1, p1.next] = add[countFingers[p1, p2], p1.hand2.fingers])
 }
@@ -126,4 +133,4 @@ run {
         // disjointPlayers
         reachableHands
     }
-} for exactly 6 Player, exactly 12 Hand
+} for exactly 6 Player, exactly 12 Hand // will be unsat with less than this, is sat for anything greater
