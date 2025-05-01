@@ -55,26 +55,42 @@ pred validTurn {
 
         some p2 : Player | {
 
-            p2 != p
+                p2 != p
 
-            not (p2.hand1' != p2.hand1 and p2.hand2' != p2.hand2) and (
-                p2.hand1' = add[p2.hand1, p.hand1] or
-                p2.hand1' = add[p2.hand1, p.hand2] or
-                p2.hand2' = add[p2.hand2, p.hand1] or
-                p2.hand2' = add[p2.hand2, p.hand2]
-            )
-            
-            p2.turn' = 1
+                // not (p2.hand1' != p2.hand1 and p2.hand2' != p2.hand2) and (
+                //     p2.hand1' = add[p2.hand1, p.hand1] or
+                //     p2.hand1' = add[p2.hand1, p.hand2] or
+                //     p2.hand2' = add[p2.hand2, p.hand1] or
+                //     p2.hand2' = add[p2.hand2, p.hand2]
+                // )
 
-            p2.hand1' != p2.hand1 implies p2.hand2' = p2.hand2
-            p2.hand2' != p2.hand2 implies p2.hand1' = p2.hand1
+                p2.hand1' = add[p2.hand1, p.hand1] and (
+                    not (
+                        p2.hand1' = add[p2.hand1, p.hand2] or
+                        p2.hand2' = add[p2.hand2, p.hand1] or
+                        p2.hand2' = add[p2.hand2, p.hand2]
+                    )
+                )
+                
+
+                (p2.hand1' = add[p2.hand1, p.hand1]) implies p2.hand2' = p2.hand2 or
+                (p2.hand1' = add[p2.hand1, p.hand2]) implies p2.hand2' = p2.hand2 or 
+                (p2.hand2' = add[p2.hand2, p.hand1]) implies p2.hand1' = p2.hand1 or
+                (p2.hand2' = add[p2.hand2, p.hand2]) implies p2.hand1' = p2.hand1
+        
+                
+                p2.turn' = 1
+
+                p.hand1' = p.hand1 and p.hand2' = p.hand2
+                // p2.hand1' != p2.hand1 implies p2.hand2' = p2.hand2
+                // p2.hand2' != p2.hand2 implies p2.hand1' = p2.hand1
      
 
-        }      
+            }      
 
         }
 
-        p.turn' = 0 implies (p.hand1' = p.hand1 and  p.hand2' = p.hand2)
+        // p.turn' = 0 implies (p.hand1' = p.hand1 and  p.hand2' = p.hand2)
 
         }
 
