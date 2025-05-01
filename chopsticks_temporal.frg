@@ -1,7 +1,14 @@
 #lang forge/temporal
 
 option max_tracelength 12
-option min_tracelength 2
+option min_tracelength 5
+
+---------- Definitions ----------
+
+#lang forge/temporal
+
+option max_tracelength 12
+option min_tracelength 5
 
 ---------- Definitions ----------
 
@@ -12,95 +19,80 @@ sig Player {
 }
 
 pred validState {
-
     // fingers between 0 and 5
-    all p : Player | {
-        p.hand1 >= 0
-        p.hand1 <= 5
-        p.hand2 >= 0
-        p.hand2 <= 5
-    }
 
     // two hands at all times
     all p : Player | {
         one p.hand1 and one p.hand2
     }
 
-    #{ p : Player | p.turn = 1} = 1
+    // Exactly one player has turn=1
+    #{p: Player | p.turn = 1} = 1
 
     all p : Player | {
         p.turn = 0 or p.turn = 1
     }
-
 }
 
-pred initState {
-        
+pred initState {    
     all p : Player | {
         p.hand1 = 1
-        p.hand1 = 1
         p.hand2 = 1
-        p.hand2 = 1
+        p.turn = 0 or p.turn = 1
     }
-
+    one p : Player | p.turn = 1
 }
 
 pred validTurn {
+    // Player whose turn it is
+    one current: Player | {
+        current.turn = 1
+        // Find exactly one target to attack
+        one target: Player | {
+            target != current 
+            // Only one of target's hands changes
+            (target.hand1' != target.hand1 and target.hand2' = target.hand2) or
+            (target.hand2' != target.hand2 and target.hand1' = target.hand1)
+            
+            // Apply modulo 5 (hand becomes 0 if sum ≥5)
+            target.hand1'!= target.hand1 implies {
+                let sum1 = add[target.hand1, current.hand1],
+                    sum2 = add[target.hand1, current.hand2] |
+                        (target.hand1' = sum1 and sum1 < 5) or
+                        (target.hand1' = sum2 and sum2 < 5) or
+                        (target.hand1' = 0 and (sum1 >= 5 or sum2 >= 5 or sum1 <= 0 or sum2 <= 0))
+            }
 
-    all p : Player | {
-
-
-        p.turn = 1 implies {
-        p.turn' = 0
-
-        some p2 : Player | {
-
-                p2 != p
-
-                // not (p2.hand1' != p2.hand1 and p2.hand2' != p2.hand2) and (
-                //     p2.hand1' = add[p2.hand1, p.hand1] or
-                //     p2.hand1' = add[p2.hand1, p.hand2] or
-                //     p2.hand2' = add[p2.hand2, p.hand1] or
-                //     p2.hand2' = add[p2.hand2, p.hand2]
-                // )
-
-                p2.hand1' = add[p2.hand1, p.hand1] and (
-                    not (
-                        p2.hand1' = add[p2.hand1, p.hand2] or
-                        p2.hand2' = add[p2.hand2, p.hand1] or
-                        p2.hand2' = add[p2.hand2, p.hand2]
-                    )
-                )
-                
-
-                (p2.hand1' = add[p2.hand1, p.hand1]) implies p2.hand2' = p2.hand2 or
-                (p2.hand1' = add[p2.hand1, p.hand2]) implies p2.hand2' = p2.hand2 or 
-                (p2.hand2' = add[p2.hand2, p.hand1]) implies p2.hand1' = p2.hand1 or
-                (p2.hand2' = add[p2.hand2, p.hand2]) implies p2.hand1' = p2.hand1
-        
-                
-                p2.turn' = 1
-
-                p.hand1' = p.hand1 and p.hand2' = p.hand2
-                // p2.hand1' != p2.hand1 implies p2.hand2' = p2.hand2
-                // p2.hand2' != p2.hand2 implies p2.hand1' = p2.hand1
-     
-
-            }      
-
+            target.hand2'!= target.hand2 implies {
+                let sum1 = add[target.hand2, current.hand1],
+                    sum2 = add[target.hand2, current.hand2] |
+                        (target.hand2' = sum1 and sum1 < 5) or
+                        (target.hand2' = sum2 and sum2 < 5) or
+                        (target.hand2' = 0 and (sum1 >= 5 or sum2 >= 5 or sum1 <= 0 or sum2 <= 0))
+            }    
+            
+            // Current player's hands don't change
+            current.hand1' = current.hand1
+            current.hand2' = current.hand2
+            
+            // Turn switching
+            current.turn' = 0
+            target.turn' = 1
+            
+            // All other players remain unchanged
+            all p: Player | p != current and p != target implies {
+                p.hand1' = p.hand1
+                p.hand2' = p.hand2
+                p.turn' = p.turn
+            }
         }
-
-        // p.turn' = 0 implies (p.hand1' = p.hand1 and  p.hand2' = p.hand2)
-
-        }
-
-
     }
+}
 
 pred winning {
     some disj p, p2: Player | {
-        no p.hand1 and no p.hand2
-        one p2.hand1 or one p.hand2
+        (p.hand1 = 0 and p.hand2 = 0) and
+        (p2.hand1 > 0 or p2.hand2 > 0)
     }
 }
 
@@ -108,20 +100,5 @@ run {
     initState
     always validState
     always validTurn
-} for exactly 2 Player
-
-
-// pred traces {
-//     initState
-//     always validState
-//     always validTurn
-// }
-
-
-// test expect {
-//     myTest: {
-//         traces
-//     } is unsat 
-// }
-
-
+    //eventually winning
+} for exactly 3 Player
