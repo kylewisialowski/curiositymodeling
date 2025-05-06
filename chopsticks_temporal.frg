@@ -23,12 +23,20 @@ sig Hand {
 }
 
 pred validState {
-    // fingers between 0 and 5
 
     // two hands at all times
     all p : Player | {
         one p.hand1 and one p.hand2
+        p.turn = 0 or p.turn = 1
     }
+
+    all disj p, p2 : Player | {
+        p.hand1 != p2.hand1
+        p.hand1 != p2.hand2
+        p.hand2 != p2.hand2
+    }
+
+
 
     // Exactly one player has turn=1
     #{p: Player | p.turn = 1} = 1
@@ -51,17 +59,19 @@ pred validTurn {
     // Player whose turn it is
     one current: Player | {
         current.turn = 1
+
         // Find exactly one target to attack
         one target: Player | {
             target != current 
+
             // Only one of target's hands changes
             (target.hand1.fingers' != target.hand1.fingers and target.hand2.fingers' = target.hand2.fingers) or
             (target.hand2.fingers' != target.hand2.fingers and target.hand1.fingers' = target.hand1.fingers)
-            
+
             // Apply modulo 5 (hand becomes 0 if sum ≥5)
             target.hand1.fingers'!= target.hand1.fingers implies {
                 let sum1 = add[target.hand1.fingers, current.hand1.fingers],
-                    sum2 = add[target.hand1, current.hand2] |
+                    sum2 = add[target.hand1.fingers, current.hand2.fingers] |
                         (target.hand1.fingers' = sum1 and sum1 < 5) or
                         (target.hand1.fingers' = sum2 and sum2 < 5) or
                         (target.hand1.fingers' = 0 and (sum1 >= 5 or sum2 >= 5 or sum1 <= 0 or sum2 <= 0))
