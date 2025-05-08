@@ -46,6 +46,7 @@ pred validSplit {
                     new_total = original_total
 
             current.hand1' != current.hand1 and current.hand2' != current.hand2
+            not (current.hand1' = current.hand2 and current.hand2' = current.hand1)
             current.hand1' >= 0 and current.hand1' <= 5
             current.hand2' >= 0 and current.hand2' <= 5
 
@@ -122,7 +123,7 @@ pred validTurn {
         p.hand1 <= 5
         p.hand2 <= 5
     }
-    
+
 }
 
 pred winning {
