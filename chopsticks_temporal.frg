@@ -1,7 +1,7 @@
 #lang forge/temporal
 
-option max_tracelength 12
-option min_tracelength 6
+option max_tracelength 20
+option min_tracelength 10
 
 ---------- Definitions ----------
 
@@ -29,6 +29,7 @@ pred twoHands {
 }
 
 pred validSplit {
+
     one current: Player | {
         current.turn = 1
 
@@ -115,12 +116,13 @@ pred validTurn {
         }
     }
 
-    // all p : Player | {
-    //     p.hand1 >= 0
-    //     p.hand2 >= 0
-    //     p.hand1 <= 5
-    //     p.hand2 <= 5
-    // }
+    all p : Player | {
+        p.hand1 >= 0
+        p.hand2 >= 0
+        p.hand1 <= 5
+        p.hand2 <= 5
+    }
+    
 }
 
 pred winning {
