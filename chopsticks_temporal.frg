@@ -21,6 +21,13 @@ pred initState {
     one p : Player | p.turn = 1
 }
 
+pred twoHands {
+    all p : Player | {
+        some p.hand1
+        some p.hand2
+    }
+}
+
 pred validSplit {
     one current: Player | {
         current.turn = 1
@@ -53,6 +60,14 @@ pred validSplit {
             }
         }
     }
+
+    all p : Player | {
+        p.hand1 >= 0
+        p.hand2 >= 0
+        p.hand1 <= 5
+        p.hand2 <= 5
+    }
+
 }
 
 pred validTurn {
@@ -67,21 +82,21 @@ pred validTurn {
             (target.hand2' != target.hand2 and target.hand1' = target.hand1)
             
             // Apply modulo 5 (hand becomes 0 if sum ≥5)
-            target.hand1'!= target.hand1 and target.hand1 != 0 implies {
+            ((target.hand1'!= target.hand1 and target.hand1 != 0 and {
                 let sum1 = add[target.hand1, current.hand1],
                     sum2 = add[target.hand1, current.hand2] |
-                        (target.hand1' = sum1 and sum1 < 6) or
-                        (target.hand1' = sum2 and sum2 < 6) or
+                        (target.hand1' = sum1 and sum1 < 6 and sum1 >= 0) or
+                        (target.hand1' = sum2 and sum2 < 6 and sum2 >= 0) or
                         (target.hand1' = 0 and (sum1 >= 6 or sum2 >= 6 or sum1 <= 0 or sum2 <= 0))
-            }
+            }) or
 
-            target.hand2'!= target.hand2 and target.hand2 != 0 implies {
+            (target.hand2'!= target.hand2 and target.hand2 != 0 and {
                 let sum1 = add[target.hand2, current.hand1],
                     sum2 = add[target.hand2, current.hand2] |
-                        (target.hand2' = sum1 and sum1 < 6) or
-                        (target.hand2' = sum2 and sum2 < 6) or
+                        (target.hand2' = sum1 and sum1 < 6 and sum1 >= 0) or
+                        (target.hand2' = sum2 and sum2 < 6 and sum2 >= 0) or
                         (target.hand2' = 0 and (sum1 >= 6 or sum2 >= 6 or sum1 <= 0 or sum2 <= 0))
-            }    
+            })) 
             
             // Current player's hands don't change
             current.hand1' = current.hand1
@@ -99,6 +114,13 @@ pred validTurn {
             }
         }
     }
+
+    // all p : Player | {
+    //     p.hand1 >= 0
+    //     p.hand2 >= 0
+    //     p.hand1 <= 5
+    //     p.hand2 <= 5
+    // }
 }
 
 pred winning {
@@ -118,6 +140,7 @@ pred static {
 
 run {
     initState
+    always twoHands
     always (not winning implies (validTurn or validSplit))
     eventually winning
     always (winning implies static)
