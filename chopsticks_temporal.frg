@@ -7,11 +7,23 @@ option min_tracelength 6
 
 
 sig Player {
+<<<<<<< HEAD
     var hand1 : lone Int,
     var hand2 : lone Int,
     var turn : lone Int
 }
 
+=======
+    hand1 : one Hand,
+    hand2 : one Hand,
+    var turn : one Int
+}
+
+sig Hand {
+    var fingers : one Int
+}
+
+>>>>>>> e16505e048bbfa7e3c8cd0af5197e9a2b6159bdb
 pred validState {
     // fingers between 0 and 5
 
@@ -20,6 +32,20 @@ pred validState {
         one p.hand1 and one p.hand2
     }
 
+<<<<<<< HEAD
+=======
+    all disj p, p2 : Player | {
+        p.hand1 != p2.hand1
+        p.hand1 != p2.hand2
+        p.hand2 != p2.hand1
+        p.hand2 != p2.hand2
+        p.hand1 != p.hand2
+        p2.hand1 != p2.hand2
+    }
+
+
+
+>>>>>>> e16505e048bbfa7e3c8cd0af5197e9a2b6159bdb
     // Exactly one player has turn=1
     #{p: Player | p.turn = 1} = 1
 
@@ -35,6 +61,32 @@ pred initState {
         p.turn = 0 or p.turn = 1
     }
     one p : Player | p.turn = 1
+}
+
+pred validSplit {
+    one current: Player | {
+        current.turn = 1
+
+        one target: Player | {
+            current != target
+
+            // target's hands should NOT change
+            target.hand1.fingers' = target.hand1.fingers
+            target.hand2.fingers' = target.hand2.fingers
+
+            // total number for current should stay the same
+            let new_total = add[current.hand1.fingers', current.hand2.fingers'],
+                original_total = add[current.hand1.fingers, current.hand2.fingers] |
+                    new_total = original_total
+            current.hand1.fingers' != current.hand1.fingers and current.hand2.fingers' != current.hand2.fingers
+            current.hand1.fingers' >= 0 and current.hand1.fingers' < 5
+            current.hand2.fingers' >= 0 and current.hand2.fingers' < 5
+
+            // Turn switching
+            current.turn' = 0
+            target.turn' = 1
+        }
+    }
 }
 
 pred validTurn {
@@ -93,6 +145,12 @@ pred winning {
 run {
     initState
     always validState
+<<<<<<< HEAD
     always validTurn
     eventually winning
 } for exactly 2 Player 
+=======
+    always {validTurn or validSplit}
+    //eventually winning
+} for exactly 2 Player
+>>>>>>> e16505e048bbfa7e3c8cd0af5197e9a2b6159bdb
