@@ -12,22 +12,6 @@ sig Player {
     var turn : lone Int
 }
 
-pred validState {
-    // fingers between 0 and 5
-
-    // two hands at all times
-    all p : Player | {
-        one p.hand1 and one p.hand2
-    }
-
-    // Exactly one player has turn=1
-    #{p: Player | p.turn = 1} = 1
-
-    all p : Player | {
-        p.turn = 0 or p.turn = 1
-    }
-}
-
 pred initState {    
     all p : Player | {
         p.hand1 = 1
@@ -52,13 +36,21 @@ pred validSplit {
             let new_total = add[current.hand1', current.hand2'],
                 original_total = add[current.hand1, current.hand2] |
                     new_total = original_total
+
             current.hand1' != current.hand1 and current.hand2' != current.hand2
-            current.hand1' >= 0 and current.hand1' < 5
-            current.hand2' >= 0 and current.hand2' < 5
+            current.hand1' >= 0 and current.hand1' <= 5
+            current.hand2' >= 0 and current.hand2' <= 5
 
             // Turn switching
             current.turn' = 0
             target.turn' = 1
+
+            // All other players remain unchanged
+            all p: Player | p != current and p != target implies {
+                p.hand1' = p.hand1
+                p.hand2' = p.hand2
+                p.turn' = p.turn
+            }
         }
     }
 }
@@ -126,8 +118,7 @@ pred static {
 
 run {
     initState
-    always validState
-    always (not winning implies (validTurn))
+    always (not winning implies (validTurn or validSplit))
     eventually winning
     always (winning implies static)
 
