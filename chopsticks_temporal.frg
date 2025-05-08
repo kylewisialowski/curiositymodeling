@@ -45,38 +45,14 @@ pred initState {
     }
 }
 
-pred addToHand[current : Player, target : Player] {
+pred addToHand[current : Player, target : Player, ch: Hand, th: Hand] {
 
-    target.hand1.fingers' != target.hand1.fingers implies {
-
-        target.hand2.fingers' = target.hand2.fingers
-
-        ((target.hand1.fingers' = 0 and 
-        add[target.hand1.fingers, current.hand1.fingers] > 5 or 
-        add[target.hand1.fingers, current.hand2.fingers] > 5) or
-
-        (target.hand1.fingers' = add[target.hand1.fingers, current.hand1.fingers] and 
-        add[target.hand1.fingers, current.hand1.fingers] < 6) or
-
-        (target.hand1.fingers' = add[target.hand1.fingers, current.hand2.fingers] and 
-        add[target.hand1.fingers, current.hand2.fingers] < 6))
-
+    add[ch.fingers, th.fingers] >= 6 implies {
+        th.fingers' = 0 or th.fingers' = 0
     }
 
-    target.hand2.fingers' != target.hand2.fingers implies {
-
-        target.hand1.fingers' = target.hand1.fingers
-
-        ((target.hand2.fingers' = 0 and 
-        add[target.hand2.fingers, current.hand1.fingers] > 5 or 
-        add[target.hand2.fingers, current.hand2.fingers] > 5) or
-
-        (target.hand2.fingers' = add[target.hand2.fingers, current.hand1.fingers] and
-        add[target.hand2.fingers, current.hand1.fingers] < 6) or
-
-        (target.hand2.fingers' = add[target.hand2.fingers, current.hand2.fingers] and
-        add[target.hand2.fingers, current.hand2.fingers] < 6))
-    
+    add[ch.fingers, th.fingers] < 6 implies {
+        th.fingers' = add[ch.fingers, th.fingers] or th.fingers' = add[ch.fingers, th.fingers]
     }
 
 }
@@ -90,13 +66,15 @@ pred validTurn {
         some target: Player | {
             target != current 
 
-            (target.hand1.fingers' != target.hand1.fingers or
-            target.hand2.fingers' != target.hand2.fingers)
+            #{h : Hand | h.fingers' != h.fingers} = 1
 
             current.hand1.fingers' = current.hand1.fingers
             current.hand2.fingers' = current.hand2.fingers
 
-            addToHand[current, target]
+            (addToHand[current, target, current.hand1, target.hand1] or
+            addToHand[current, target, current.hand1, target.hand2] or
+            addToHand[current, target, current.hand2, target.hand1] or
+            addToHand[current, target, current.hand2, target.hand2])
                       
             // Turn switching
             current.turn' = 0
