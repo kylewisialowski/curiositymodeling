@@ -11,13 +11,24 @@ sig Player {
     var turn : lone Int
 }
 
+one sig Player1 extends Player {}
+one sig Player2 extends Player {}
+
+
 pred initState {    
-    all p : Player | {
-        p.hand1 = 1
-        p.hand2 = 1
-        p.turn = 0 or p.turn = 1
-    }
-    one p : Player | p.turn = 1
+    // all p : Player | {
+    //     p.hand1 = 1
+    //     p.hand2 = 1
+    //     p.turn = 0 or p.turn = 1
+    // }
+    Player1.hand1 = 1
+    Player1.hand2 = 1
+    Player2.hand1 = 1
+    Player2.hand2 = 1
+    
+    Player1.turn = 1
+    Player2.turn = 0
+    // one p : Player | p.turn = 1
 }
 
 pred twoHands {
@@ -129,16 +140,30 @@ pred winning {
     some disj p, p2: Player | {
         (p.hand1 = 0 and p.hand2 = 0) and
         (p2.hand1 > 0 or p2.hand2 > 0)
-        p.hand1' = 1
-        p.hand2' = 1
-        p2.hand1' = 1
-        p2.hand2' = 1
+
+        Player1.hand1' = 1
+        Player1.hand2' = 1
+        Player2.hand1' = 1
+        Player2.hand2' = 1
+        
+        Player1.turn' = 1
+        Player2.turn' = 0
+        // p.hand1' = 1
+        // p.hand2' = 1
+        // p2.hand1' = 1
+        // p2.hand2' = 1
+        // p.turn' = 0
+        // p2.turn' = 1
     }
 }
 
-run {
+pred traces {
     initState
     always twoHands
     always (not winning implies (validTurn or validSplit))
     eventually winning
+} 
+
+run {
+    traces
 } for exactly 2 Player for {#Int = 5}
