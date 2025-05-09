@@ -5,7 +5,6 @@ option min_tracelength 10
 
 ---------- Definitions ----------
 
-
 sig Player {
     var hand1 : lone Int,
     var hand2 : lone Int,
@@ -130,14 +129,10 @@ pred winning {
     some disj p, p2: Player | {
         (p.hand1 = 0 and p.hand2 = 0) and
         (p2.hand1 > 0 or p2.hand2 > 0)
-    }
-}
-
-pred static {
-    all p : Player | {
-        p.hand1' = p.hand1
-        p.hand2' = p.hand2
-        p.turn' = p.turn
+        p.hand1' = 1
+        p.hand2' = 1
+        p2.hand1' = 1
+        p2.hand2' = 1
     }
 }
 
@@ -146,6 +141,4 @@ run {
     always twoHands
     always (not winning implies (validTurn or validSplit))
     eventually winning
-    always (winning implies static)
-
 } for exactly 2 Player for {#Int = 5}
