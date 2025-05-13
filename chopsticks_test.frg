@@ -104,7 +104,7 @@ test suite for validSplit {
 
     test expect {
 
-        // normal split with one hand going to 0
+        // normal split with one hand going to 0 (creates dead hand)
         split1 : {
             some p : Player {
                 p.hand1 = 1
@@ -150,6 +150,32 @@ test suite for validSplit {
                 p.turn' = 0
                 validSplit
                 not validTurn
+            }
+        } is sat
+
+        // split brings dead hand back into game
+        split5 : {
+            some p : Player {
+                p.hand1 = 4
+                p.hand2 = 0
+                p.turn = 1
+                p.hand1' = 2
+                p.hand2' = 2
+                p.turn' = 0
+                validSplit
+            }
+        } is sat
+
+        // should not be able to split as first move
+        split6 : {
+            some p : Player {
+                p.hand1 = 1
+                p.hand2 = 1
+                p.turn = 1
+                p.hand1' = 1
+                p.hand2' = 1
+                p.turn' = 0
+                initState and not validSplit
             }
         } is sat
     }
@@ -470,6 +496,25 @@ test suite for winning {
                 p2.turn' = 0
 
                 winning
+            }
+        } is sat
+
+        // reset should theoretically go back to initState
+        win4: {
+            some p, p2 : Player {
+                p.hand1 = 1
+                p.hand2 = 3
+                p2.hand1 = 0
+                p2.hand2 = 0
+
+                p.hand1' = 1
+                p.hand2' = 1
+                p2.hand1' = 1
+                p.hand2' = 1
+                p.turn' = 1
+                p2.turn' = 0
+
+                winning implies initState
             }
         } is sat
     }
