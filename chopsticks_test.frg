@@ -22,6 +22,58 @@ test suite for initState {
     assert oneFinger is necessary for initState for exactly 2 Player
     // only one player starts with a turn
     assert startTurn is necessary for initState for exactly 2 Player
+
+    test expect {
+
+        // normal init -- all hands start with 1 finger
+        init1 : {
+            some p, p2 : Player | {
+                p.hand1 = 1
+                p.hand2 = 1
+                p2.hand1 = 1
+                p2.hand2 = 1
+                initState
+            }
+        } is sat
+
+        // bad init (not all starting with 1 finger)
+        init2 : {
+            some p, p2 : Player | {
+                p.hand1 = 1
+                p.hand2 = 1
+                p2.hand1 = 1
+                p2.hand2 = 2
+                initState
+            }
+        } is unsat
+
+        // good init with turns
+        init3 : {
+            some p, p2 : Player | {
+                p.hand1 = 1
+                p.hand2 = 1
+                p2.hand1 = 1
+                p2.hand2 = 1
+                p.turn = 0
+                p2.turn = 1
+                initState
+            }
+        } is sat
+
+        // bad init with turns (can't both start with a turn)
+        init4 : {
+            some disj p, p2 : Player | {
+                p.hand1 = 1
+                p.hand2 = 1
+                p2.hand1 = 1
+                p2.hand2 = 1
+                p.turn = 1
+                p2.turn = 1
+                initState
+            }
+        } is unsat
+        
+    }
 }
 
 // player's total fingers during turn = player's total fingers during next turn
@@ -49,6 +101,58 @@ test suite for validSplit {
     assert oneChange is necessary for validSplit for exactly 2 Player
     // all fingers stay within legal bounds (0 and 5)
     assert legalFingers is necessary for validSplit for exactly 2 Player
+
+    test expect {
+
+        // normal split with one hand going to 0
+        split1 : {
+            some p : Player {
+                p.hand1 = 1
+                p.hand2 = 2
+                p.hand1' = 0
+                p.hand2' = 3
+                validSplit
+            }
+        } is sat
+
+        // fingers only switch hands (this should not happen)
+        split2 : {
+            some p : Player {
+                p.hand1 = 1
+                p.hand2 = 2
+                p.hand1' = 2
+                p.hand2' = 1
+                validSplit
+            }
+        } is unsat
+
+        // proper turn switching
+        split3 : {
+            some p : Player {
+                p.hand1 = 4
+                p.hand2 = 2
+                p.turn = 1
+                p.hand1' = 3
+                p.hand2' = 3
+                p.turn' = 0
+                validSplit
+            }
+        } is sat
+
+        // bad turn switching
+        split4 : {
+            some p : Player {
+                p.hand1 = 4
+                p.hand2 = 2
+                p.turn = 1
+                p.hand1' = 3
+                p.hand2' = 3
+                p.turn' = 0
+                validSplit
+            }
+        } is sat
+    }
+    
 }
 
 // exactly one hand changes during the turn
@@ -99,6 +203,93 @@ test suite for validTurn {
     assert loseHand is necessary for validTurn for exactly 2 Player
     // legal number of fingers on each hand is preserved
     assert legalFingers is necessary for validTurn for exactly 2 Player
+
+    test expect {
+
+        // normal turn switch
+        turn1 : {
+                some p, p2 : Player {
+                    p.hand1 = 1
+                    p.hand2 = 2
+                    p.turn = 1
+                    p2.hand1 = 1
+                    p2.hand2 = 1
+                    p2.turn = 0
+
+                    p.hand1' = 1
+                    p.hand2' = 2
+                    p.turn'= 0
+                    p2.hand1' = 1
+                    p2.hand2' = 3
+                    p2.turn' = 1
+
+                    validTurn
+                }
+            } is sat
+
+        // turn doesn't change
+        turn2 : {
+                some p, p2 : Player {
+                    p.hand1 = 1
+                    p.hand2 = 2
+                    p.turn = 1
+                    p2.hand1 = 1
+                    p2.hand2 = 1
+                    p2.turn = 0
+
+                    p.hand1' = 1
+                    p.hand2' = 2
+                    p.turn'= 1
+                    p2.hand1' = 1
+                    p2.hand2' = 3
+                    p2.turn' = 0
+
+                    validTurn
+                }
+            } is unsat
+
+        // hands don't change
+        turn3 : {
+                some p, p2 : Player {
+                    p.hand1 = 1
+                    p.hand2 = 2
+                    p.turn = 1
+                    p2.hand1 = 1
+                    p2.hand2 = 1
+                    p2.turn = 0
+
+                    p.hand1' = 1
+                    p.hand2' = 2
+                    p.turn'= 0
+                    p2.hand1' = 1
+                    p2.hand2' = 1
+                    p2.turn' = 1
+
+                    validTurn
+                }
+            } is unsat
+
+        // adding too many fingers
+        turn4 : {
+                some p, p2 : Player {
+                    p.hand1 = 1
+                    p.hand2 = 2
+                    p.turn = 1
+                    p2.hand1 = 1
+                    p2.hand2 = 1
+                    p2.turn = 0
+
+                    p.hand1' = 1
+                    p.hand2' = 2
+                    p.turn'= 0
+                    p2.hand1' = 1
+                    p2.hand2' = 5
+                    p2.turn' = 1
+
+                    validTurn
+                }
+            } is unsat
+    }
 }
 
 // someone must lose both hands
@@ -115,21 +306,51 @@ pred someWinner {
     }
 }
 
+// all hands revert to 1 finger
+pred allOne {
+    all p : Player | {
+        p.hand1' = 1 and p.hand2' = 1
+    }
+}
+
 test suite for winning {
     // someone loses both hands
     assert someLoser is necessary for winning for exactly 2 Player
     // someone has fingers on at least one hand
     assert someWinner is necessary for winning for exactly 2 Player
-}
+    // make sure we loop back to init configuation
+    assert allOne is necessary for winning for exactly 2 Player
 
-// no players experience any changes
-pred nothingChanges {
-    #{p : Player | p.hand1' != p.hand1} = 0
-    #{p : Player | p.hand2' != p.hand2} = 0
-    #{p : Player | p.turn' != p.turn} = 0
-}
+    test expect {
 
-test suite for static {
-    // nothing changes between moves
-    assert nothingChanges is necessary for static for exactly 2 Player
+        // normal winning conditions + good reset
+        win1 : {
+            some p, p2 : Player {
+                p.hand1 = 1
+                p.hand2 = 0
+                p2.hand1 = 0
+                p2.hand2 = 0
+                p.hand1' = 1
+                p.hand2' = 1
+                p2.hand1' = 1
+                p.hand2' = 1
+                winning
+            }
+        } is sat
+
+        // bad reset (all next hands should go to 1 finger)
+        win2 : {
+            some p, p2 : Player {
+                p.hand1 = 0
+                p.hand2 = 0
+                p2.hand1 = 0
+                p2.hand2 = 0
+                p.hand1' = 1
+                p.hand2' = 1
+                p2.hand1' = 1
+                p.hand2' = 0
+                winning
+            }
+        } is unsat
+    }
 }
