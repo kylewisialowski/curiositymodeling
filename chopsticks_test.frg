@@ -38,7 +38,7 @@ test suite for initState {
 
         // bad init (not all starting with 1 finger)
         init2 : {
-            some p, p2 : Player | {
+            one p, p2 : Player | {
                 p.hand1 = 1
                 p.hand2 = 1
                 p2.hand1 = 1
@@ -62,7 +62,7 @@ test suite for initState {
 
         // bad init with turns (can't both start with a turn)
         init4 : {
-            some disj p, p2 : Player | {
+            one disj p, p2 : Player | {
                 p.hand1 = 1
                 p.hand2 = 1
                 p2.hand1 = 1
@@ -139,7 +139,7 @@ test suite for validSplit {
             }
         } is sat
 
-        // bad turn switching
+        // validSplit without additional validTurn move (split counts as a turn)
         split4 : {
             some p : Player {
                 p.hand1 = 4
@@ -149,6 +149,7 @@ test suite for validSplit {
                 p.hand2' = 3
                 p.turn' = 0
                 validSplit
+                not validTurn
             }
         } is sat
     }
@@ -206,7 +207,7 @@ test suite for validTurn {
 
     test expect {
 
-        // normal turn switch
+        // normal turn switch (p to p2)
         turn1 : {
                 some p, p2 : Player {
                     p.hand1 = 1
@@ -289,6 +290,98 @@ test suite for validTurn {
                     validTurn
                 }
             } is unsat
+        
+        // good exchange of fingers 
+        turn5 : {
+                some p, p2 : Player {
+                    p.hand1 = 1
+                    p.hand2 = 2
+                    p.turn = 1
+                    p2.hand1 = 1
+                    p2.hand2 = 1
+                    p2.turn = 0
+
+                    p.hand1' = 1
+                    p.hand2' = 2
+                    p.turn'= 0
+                    p2.hand1' = 1
+                    p2.hand2' = 3
+                    p2.turn' = 1
+
+                    validTurn
+                }
+            } is sat
+        
+        // good exchange of fingers (with overflow)
+        turn6 : {
+                some p, p2 : Player {
+                    p.hand1 = 2
+                    p.hand2 = 2
+                    p.turn = 1
+                    p2.hand1 = 3
+                    p2.hand2 = 4
+                    p2.turn = 0
+
+                    p.hand1' = 2
+                    p.hand2' = 2
+                    p.turn'= 0
+                    p2.hand1' = 3
+                    p2.hand2' = 0
+                    p2.turn' = 1
+
+                    validTurn
+                }
+            } is sat
+        
+        // good exchange and leads to winning
+        turn7 : {
+                some p, p2 : Player {
+                    p.hand1 = 1
+                    p.hand2 = 2
+                    p.turn = 1
+                    p2.hand1 = 0
+                    p2.hand2 = 4
+                    p2.turn = 0
+
+                    p.hand1' = 1
+                    p.hand2' = 2
+                    p.turn'= 0
+                    p2.hand1' = 0
+                    p2.hand2' = 0
+                    p2.turn' = 1
+
+                    (p.hand1')' = 1
+                    (p.hand2')' = 1
+                    (p.turn')'= 1
+                    (p2.hand1')' = 1
+                    (p2.hand2')' = 1
+                    (p2.turn')' = 0
+
+                    validTurn implies winning
+                }
+            } is sat
+        
+        // good exchange / valid move, cannot split in same turn
+        turn8 : {
+                some p, p2 : Player {
+                    p.hand1 = 2
+                    p.hand2 = 2
+                    p.turn = 1
+                    p2.hand1 = 3
+                    p2.hand2 = 4
+                    p2.turn = 0
+
+                    p.hand1' = 2
+                    p.hand2' = 2
+                    p.turn'= 0
+                    p2.hand1' = 3
+                    p2.hand2' = 0
+                    p2.turn' = 1
+
+                    validTurn
+                    not validSplit
+                }
+            } is sat
     }
 }
 
@@ -323,17 +416,21 @@ test suite for winning {
 
     test expect {
 
-        // normal winning conditions + good reset
+        // normal winning conditions (one living hand) + good reset
         win1 : {
             some p, p2 : Player {
                 p.hand1 = 1
                 p.hand2 = 0
                 p2.hand1 = 0
                 p2.hand2 = 0
+
                 p.hand1' = 1
                 p.hand2' = 1
                 p2.hand1' = 1
                 p.hand2' = 1
+                p.turn' = 1
+                p2.turn' = 0
+
                 winning
             }
         } is sat
@@ -345,12 +442,35 @@ test suite for winning {
                 p.hand2 = 0
                 p2.hand1 = 0
                 p2.hand2 = 0
+
                 p.hand1' = 1
                 p.hand2' = 1
                 p2.hand1' = 1
                 p.hand2' = 0
+                p.turn' = 1
+                p2.turn' = 0
+
                 winning
             }
         } is unsat
+
+        // good winning conditions (two living hands) + good reset
+        win3 : {
+            some p, p2 : Player {
+                p.hand1 = 1
+                p.hand2 = 3
+                p2.hand1 = 0
+                p2.hand2 = 0
+
+                p.hand1' = 1
+                p.hand2' = 1
+                p2.hand1' = 1
+                p.hand2' = 1
+                p.turn' = 1
+                p2.turn' = 0
+
+                winning
+            }
+        } is sat
     }
 }
